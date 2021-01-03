@@ -33,121 +33,125 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.logging.Logger;
 
+/**
+ * @author TaylorSmile
+ * @date 2021/1/3 13:17
+ * @description AES加解密算法
+ */
+
 public class AESUtil {
+    
+  private static Logger logger = Logger.getLogger(AESUtil.class.getName());
 
-    private static Logger logger = Logger.getLogger(AESUtil.class.getName());
+  // 自定义的密码
+  public static String KEY = "A669D42F119s10BM5FB8";
 
-    // 自定义的密码
-    public static String KEY = "A669D42F119s10BM5FB8";
+  // 偏移量
+  private static int offset = 16;
 
-    // 偏移量
-    private static int offset = 16;
+  // 加解密的算法类型
+  private static final String KEY_ALGORITHM = "AES";
 
-    // 加解密的算法类型
-    private static final String KEY_ALGORITHM = "AES";
+  // 指定AES密码器(算法为AES，模式为CBC，补码方式为PKCS5Padding)
+  private static final String DEFAULT_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
 
-    // 指定AES密码器(算法为AES，模式为CBC，补码方式为PKCS5Padding)
-    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
+  /**
+   * AES加密
+   * @param content
+   * @return
+   */
+  public static String encrypt(String content) {
+    return encrypt(content, KEY);
+  }
 
-    /**
-     * AES加密
-     * @param content
-     * @return
-     */
-    public static String encrypt(String content) {
-        return encrypt(content, KEY);
+  /**
+   * AES解密
+   * @param content
+   * @return
+   */
+  public static String decrypt(String content) {
+    return decrypt(content, KEY);
+  }
+
+  /**
+   * @param content  需要加密的内容
+   * @param password 加密的密码
+   * @return 返回Base64编码之后的加密数据
+   */
+  private static String encrypt(String content, String password) {
+    try {
+      // 创建初始向量iv用于指定密钥偏移量(可自行指定但必须是128位，因为AES是分组加密的，上一组加密的密文用作下一组的iv)
+      IvParameterSpec ivParameterSpec = new IvParameterSpec(password.getBytes(), 0, offset);
+      // 根据指定的加密器实例化cipher对象
+      Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+      // 使用加密模式Mode，根据AES专用密钥，密钥偏移量来初始化加密器
+      cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(password), ivParameterSpec);
+      // 开始加密
+      byte[] encryptResult = cipher.doFinal(content.getBytes("UTF-8"));
+      // 使用Base64编码格式对加密后的二进制数组进行编码
+      return Base64.getEncoder().encodeToString(encryptResult);
+    } catch (Exception e) {
+      logger.info(e.getMessage());
     }
+    return null;
+  }
 
-    /**
-     * AES解密
-     * @param content
-     * @return
-     */
-    public static String decrypt(String content) {
-        return decrypt(content, KEY);
+  /**
+   * @param content  需要解密的内容
+   * @param password 解密的密钥
+   * @return 解密之后的内容
+   */
+  private static String decrypt(String content, String password) {
+    try {
+      // 创建初始向量iv用于指定密钥偏移量(可自行指定但必须是128位，因为AES是分组加密的，上一组加密的密文用作下一组的iv)
+      IvParameterSpec ivParameterSpec = new IvParameterSpec(password.getBytes(), 0, offset);
+      // 根据指定的加密器实例化cipher对象
+      Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+      // 使用解密模式Mode，根据AES专用密钥，密钥偏移量来初始化加密器
+      cipher.init(Cipher.DECRYPT_MODE, getSecretKey(password), ivParameterSpec);
+      // 开始解密
+      byte[] decryptResult = cipher.doFinal(Base64.getDecoder().decode(content));
+      // 返回解密后的结果
+      return new String(decryptResult, "UTF-8");
+    } catch (Exception e) {
+      logger.info(e.getMessage());
     }
+    return null;
+  }
 
-    /**
-     *
-     * @param content 需要加密的内容
-     * @param password 加密的密码
-     * @return 返回Base64编码之后的加密数据
-     */
-    private static String encrypt(String content, String password) {
-        try {
-            // 创建初始向量iv用于指定密钥偏移量(可自行指定但必须是128位，因为AES是分组加密的，上一组加密的密文用作下一组的iv)
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(password.getBytes(), 0, offset);
-            // 根据指定的加密器实例化cipher对象
-            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
-            // 使用加密模式Mode，根据AES专用密钥，密钥偏移量来初始化加密器
-            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(password), ivParameterSpec);
-            // 开始加密
-            byte[] encryptResult = cipher.doFinal(content.getBytes("UTF-8"));
-            // 使用Base64编码格式对加密后的二进制数组进行编码
-            return Base64.getEncoder().encodeToString(encryptResult);
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-        }
-        return null;
+  /**
+   * 根据指定密钥算法生成密钥
+   * @param password
+   * @return
+   */
+  private static SecretKeySpec getSecretKey(String password) {
+    // 生成指定密钥算法生成器的keyGenerator对象
+    KeyGenerator keyGenerator = null;
+    try {
+      keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM);
+      SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+      random.setSeed(password.getBytes());
+      // 指定AES密钥的默认长度128位
+      keyGenerator.init(128, random);
+      // 生成密钥
+      SecretKey key = keyGenerator.generateKey();
+      // 转换成AES专用的密钥
+      return new SecretKeySpec(key.getEncoded(), KEY_ALGORITHM);
+    } catch (NoSuchAlgorithmException e) {
+      logger.info(e.getMessage());
     }
+    return null;
+  }
 
-    /**
-     *
-     * @param content 需要解密的内容
-     * @param password 解密的密钥
-     * @return 解密之后的内容
-     */
-    private static String decrypt(String content, String password) {
-        try {
-            // 创建初始向量iv用于指定密钥偏移量(可自行指定但必须是128位，因为AES是分组加密的，上一组加密的密文用作下一组的iv)
-            IvParameterSpec ivParameterSpec = new IvParameterSpec(password.getBytes(), 0, offset);
-            // 根据指定的加密器实例化cipher对象
-            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
-            // 使用解密模式Mode，根据AES专用密钥，密钥偏移量来初始化加密器
-            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(password), ivParameterSpec);
-            // 开始解密
-            byte[] decryptResult = cipher.doFinal(Base64.getDecoder().decode(content));
-            // 返回解密后的结果
-            return new String(decryptResult, "UTF-8");
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-        }
-        return null;
-    }
-
-    /**
-     * 根据指定密钥算法生成密钥
-     * @param password
-     * @return
-     */
-    private static SecretKeySpec getSecretKey(String password) {
-        // 生成指定密钥算法生成器的keyGenerator对象
-        KeyGenerator keyGenerator = null;
-        try {
-            keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM);
-            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(password.getBytes());
-            // 指定AES密钥的默认长度128位
-            keyGenerator.init(128, random);
-            // 生成密钥
-            SecretKey key = keyGenerator.generateKey();
-            // 转换成AES专用的密钥
-            return new SecretKeySpec(key.getEncoded(), KEY_ALGORITHM);
-        } catch (NoSuchAlgorithmException e) {
-            logger.info(e.getMessage());
-        }
-        return null;
-    }
-
-    public static void main(String[] args) {
-        // 加密前的内容
-        String content = "Hello World,你好!";
-        System.out.println(content);
-        // 加密后的内容
-        String encryptContent = AESUtil.encrypt(content);
-        System.out.println(encryptContent);
-        // 解密后的内容
-        System.out.println(AESUtil.decrypt(encryptContent));
-    }
+  public static void main(String[] args) {
+    // 加密前的内容
+    String content = "Hello World,你好!";
+    System.out.println(content);
+    // 加密后的内容
+    String encryptContent = AESUtil.encrypt(content);
+    System.out.println(encryptContent);
+    // 解密后的内容
+    System.out.println(AESUtil.decrypt(encryptContent));
+  }
 }
 ```
