@@ -54,4 +54,7 @@ kafka-topics --zookeeper localhost:2181 --topic HelloWorld --alter --partitions 
 综合以上的情况，建议设置消费者中的消费者数量等于topic下的分区数
 
 4、当消费者消费的时候，会在kafka集群中发现除了新创建的topic之外，还会出现一个 __consumer-offsets的topic主题，此主题是kafka内部的topic，是用于记录消费者组的注册信息以及读区消息时的提交位移状态值
+
+5、当某kafka的服务配置到zookeeper中后，查看其相关的配置信息
+zookeeper-shell localhost:2181
 ```
