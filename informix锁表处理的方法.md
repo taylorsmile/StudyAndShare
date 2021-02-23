@@ -47,6 +47,8 @@ c60a363c  Y-BP---   322      informix  ttyp1  c6203700   0    3     1        0
 
 
 上面的322 即为session id
+
+注：也可以通过上面的address可以查询这个线程执行过的sql语句：onstat -g sql c60a363c可以将这个线程执行过的sql语句打印出来
 ```
  
 **3、根据sessid得到进程ID**
