@@ -30,3 +30,5 @@ int[] nums = Arrays.stream(n).mapToInt(Integer::intValue).toArray();
 同样的List类型先转成IntStream类型, 然后再调用其toArray方法转成int[]
         
 int[] nums = list.stream().mapToInt(Integer::intValue).toArray();
+
+```
