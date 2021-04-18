@@ -39,8 +39,9 @@
 
 2、list.toArray(T[] a)方法创建数组
 
-    /** 使用有参数的toArray(T[] a)方法，可以根据list的大小，创建指定大小的数组*/
+    // 使用有参数的toArray(T[] a)方法，可以根据list的大小，创建指定大小的数组
     Integer[] arr = list.toArray(new Integer[list.size()]);
+    
     /** 此时Integer对象数组创建好了，现在需要int基本类型的数组
      * 则继续使用java8的新特性流的mapToInt(xxx)方法,xxx指定Integer的拆箱操作Integer::intValue
      */
