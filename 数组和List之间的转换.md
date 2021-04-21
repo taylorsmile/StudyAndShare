@@ -76,5 +76,4 @@ Arrays.stream(arr).sorted().toArray();
  */
 list.stream().max(Integer::compareTo).get();
 list.stream().min(Integer::compareTo).get();
-
 ```
