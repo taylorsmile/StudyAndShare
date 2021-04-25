@@ -17,3 +17,4 @@ JAVA代码实现：
 String beforeResult = "？？？？"；
 byte[] bytes = beforeResult.getBytes("ISO8859-1");
 String afterResult = new String(bytes, "UTF-8");
+```
